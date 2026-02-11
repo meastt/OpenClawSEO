@@ -1,0 +1,11 @@
+{
+  "name": "openclaw-seo-manager",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "bash main.sh"
+  },
+  "dependencies": {
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^126.0.0"
+  }
+}

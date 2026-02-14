@@ -5,6 +5,7 @@ Analyzes GSC data, competitors, content decay, and internal linking
 """
 
 import os
+import sys
 import json
 import requests
 from datetime import datetime, timedelta
@@ -13,34 +14,16 @@ from googleapiclient.discovery import build
 from collections import defaultdict
 import time
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'scripts'))
+from telegram_utils import send_telegram_alert
+
 # Configuration
 SITE_URL = os.getenv('GSC_SITE_URL', 'https://griddleking.com/')
-WP_URL = 'https://griddleking.com'  # Override to use Griddle King
+WP_URL = os.getenv('WP_URL', 'https://griddleking.com').rstrip('/')
 WP_USERNAME = os.getenv('WP_USERNAME')
 WP_APP_PASS = os.getenv('WP_APP_PASS')
 BRAVE_API_KEY = os.getenv('BRAVE_SEARCH_API_KEY')
 GSC_JSON_KEY = os.getenv('GSC_JSON_KEY')
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-
-def send_telegram_alert(message):
-    """Send failure alert to Michael via Telegram."""
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("⚠️  TELEGRAM NOT CONFIGURED — cannot send alert!")
-        print(f"ALERT: {message}")
-        return
-    try:
-        requests.post(
-            f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage',
-            json={
-                'chat_id': TELEGRAM_CHAT_ID,
-                'text': message,
-                'parse_mode': 'Markdown'
-            },
-            timeout=10
-        )
-    except Exception as e:
-        print(f"⚠️  Failed to send Telegram alert: {e}")
 
 # Parse GSC credentials
 if not GSC_JSON_KEY:

@@ -4,32 +4,10 @@ GSC Audit Script - Pull performance data and identify opportunities
 """
 import json
 import os
-import requests
 from datetime import datetime, timedelta
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-
-def send_telegram_alert(message):
-    """Send failure alert to Michael via Telegram."""
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("⚠️  TELEGRAM NOT CONFIGURED — cannot send alert!")
-        print(f"ALERT: {message}")
-        return
-    try:
-        requests.post(
-            f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage',
-            json={
-                'chat_id': TELEGRAM_CHAT_ID,
-                'text': message,
-                'parse_mode': 'Markdown'
-            },
-            timeout=10
-        )
-    except Exception as e:
-        print(f"⚠️  Failed to send Telegram alert: {e}")
+from telegram_utils import send_telegram_alert
 
 # Load credentials
 creds_json = os.environ.get('GSC_JSON_KEY')
@@ -59,7 +37,7 @@ except Exception as e:
     exit(1)
 
 # Site property
-SITE_URL = 'sc-domain:griddleking.com'
+SITE_URL = os.getenv('GSC_SITE_URL', 'https://griddleking.com/')
 
 # Date ranges - last 28 days vs previous 28 days
 end_date = datetime.now().date()

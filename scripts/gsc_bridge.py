@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime, timedelta
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
@@ -17,14 +18,18 @@ def get_gsc_data():
     service = build('searchconsole', 'v1', credentials=credentials)
     site_url = os.environ.get('GSC_SITE_URL', os.environ.get('WP_URL', '').rstrip('/') + '/')
 
+    # Dynamic date range: last 28 days
+    end_date = datetime.now().date() - timedelta(days=3)  # GSC data has ~3 day lag
+    start_date = end_date - timedelta(days=28)
+
     # Query: Top 10 declining keywords
     request = {
-        'startDate': '2026-01-01',
-        'endDate': '2026-02-10',
+        'startDate': str(start_date),
+        'endDate': str(end_date),
         'dimensions': ['query'],
         'rowLimit': 10
     }
-    
+
     return service.searchanalytics().query(siteUrl=site_url, body=request).execute()
 
 if __name__ == "__main__":

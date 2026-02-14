@@ -3,11 +3,35 @@
 Content Audit - Find optimization opportunities
 """
 import json
+import os
 from datetime import datetime, timedelta
+from telegram_utils import send_telegram_alert
+
+# Pre-flight: check data file exists
+data_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'data', 'wp_posts.json')
+data_path = os.path.normpath(data_path)
+
+if not os.path.exists(data_path):
+    msg = ("🚨 *CONTENT AUDIT BLOCKED*\n"
+           f"• `{data_path}` does not exist\n"
+           "• Run the WordPress fetch step first to populate post data\n"
+           "• Content audit is offline")
+    print(msg)
+    send_telegram_alert(msg)
+    exit(1)
 
 # Load posts
-with open('data/wp_posts.json', 'r') as f:
-    posts = json.load(f)
+try:
+    with open(data_path, 'r') as f:
+        posts = json.load(f)
+except (json.JSONDecodeError, IOError) as e:
+    msg = (f"🚨 *CONTENT AUDIT FAILED*\n"
+           f"• Error reading `wp_posts.json`: `{str(e)[:200]}`\n"
+           "• File may be corrupt or empty\n"
+           "• Content audit is offline")
+    print(msg)
+    send_telegram_alert(msg)
+    exit(1)
 
 print(f"📝 CONTENT AUDIT: {len(posts)} posts analyzed")
 print("=" * 80)
@@ -75,7 +99,7 @@ output = {
     }
 }
 
-with open('data/content_opportunities.json', 'w') as f:
+with open(os.path.join(os.path.dirname(data_path), 'content_opportunities.json'), 'w') as f:
     json.dump(output, f, indent=2)
 
 print(f"\n✅ Data saved to data/content_opportunities.json")

@@ -5,35 +5,17 @@ Analyzes competitor keywords and page 2 opportunities
 """
 
 import os
+import sys
 import requests
 import json
 import time
 from datetime import datetime
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'scripts'))
+from telegram_utils import send_telegram_alert
+
 BRAVE_API_KEY = os.getenv('BRAVE_SEARCH_API_KEY')
 SITE_URL = 'griddleking.com'
-
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-
-def send_telegram_alert(message):
-    """Send failure alert to Michael via Telegram."""
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("⚠️  TELEGRAM NOT CONFIGURED — cannot send alert!")
-        print(f"ALERT: {message}")
-        return
-    try:
-        requests.post(
-            f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage',
-            json={
-                'chat_id': TELEGRAM_CHAT_ID,
-                'text': message,
-                'parse_mode': 'Markdown'
-            },
-            timeout=10
-        )
-    except Exception as e:
-        print(f"⚠️  Failed to send Telegram alert: {e}")
 
 # Top competitors in griddle/grill niche
 COMPETITORS = [
